@@ -1,0 +1,246 @@
+{
+  "n": 24,
+  "seed": 7,
+  "samples": [
+    {
+      "doc_id": "01",
+      "company_key": "brea_granada_3037",
+      "company_name": "Brea - Granada Circle 3037",
+      "division": "real_estate",
+      "pdf_path": "C:\\Users\\user\\Dropbox\\Company Documentation & Financial Backups — Real Estate\\— Stephen's Workbench —\\Brea — Granada Circle 3037\\2026-07-10 HOA Statement — Buena Vida — -1539.00 — Granada Circle.pdf",
+      "file_name": "2026-07-10 HOA Statement — Buena Vida — -1539.00 — Granada Circle.pdf",
+      "reason": "edge-negative-amount",
+      "staged_path": "files/batch_01/DOC-01.pdf"
+    },
+    {
+      "doc_id": "02",
+      "company_key": "brea_granada_3037",
+      "company_name": "Brea - Granada Circle 3037",
+      "division": "real_estate",
+      "pdf_path": "C:\\Users\\user\\Dropbox\\Company Documentation & Financial Backups — Real Estate\\— Stephen's Workbench —\\Brea — Granada Circle 3037\\2026-08-10 Hoa Statement — Buena Vida Maintenance Corporation — -1539.00 — Granada Circle.pdf",
+      "file_name": "2026-08-10 Hoa Statement — Buena Vida Maintenance Corporation — -1539.00 — Granada Circle.pdf",
+      "reason": "edge-negative-amount",
+      "staged_path": "files/batch_01/DOC-02.pdf"
+    },
+    {
+      "doc_id": "03",
+      "company_key": "hip",
+      "company_name": "HIP - Healthcare Investment Properties",
+      "division": "dialysis",
+      "pdf_path": "G:\\My Drive\\Abdeen & Griffith\\Company Documentation & Financial Backups — Dialysis\\— Stephen's Workbench —\\HIP\\2026-08 Bank Statement — Chase 9556 — HIP.pdf",
+      "file_name": "2026-08 Bank Statement — Chase 9556 — HIP.pdf",
+      "reason": "edge-month-only-date",
+      "staged_path": "files/batch_01/DOC-03.pdf"
+    },
+    {
+      "doc_id": "04",
+      "company_key": "vegas_singingwind_10240",
+      "company_name": "Las Vegas - Singing Wind Place 10240",
+      "division": "real_estate",
+      "pdf_path": "C:\\Users\\user\\Dropbox\\Company Documentation & Financial Backups — Real Estate\\— Stephen's Workbench —\\Las Vegas — Singing Wind Place 10240\\2026-07 Bank Statement — BoN 3882 — Series 2, Singing Wind.pdf",
+      "file_name": "2026-07 Bank Statement — BoN 3882 — Series 2, Singing Wind.pdf",
+      "reason": "edge-month-only-date",
+      "staged_path": "files/batch_01/DOC-04.pdf"
+    },
+    {
+      "doc_id": "05",
+      "company_key": "valencia_seco_127",
+      "company_name": "Valencia - Seco Canyon Road 127",
+      "division": "real_estate",
+      "pdf_path": "C:\\Users\\user\\Dropbox\\Company Documentation & Financial Backups — Real Estate\\— Stephen's Workbench —\\Valencia — Seco Canyon Road 127\\2026-08-01 HOA Statement — Seco Canyon.pdf",
+      "file_name": "2026-08-01 HOA Statement — Seco Canyon.pdf",
+      "reason": "edge-likely-scan",
+      "staged_path": "files/batch_02/DOC-05.pdf"
+    },
+    {
+      "doc_id": "06",
+      "company_key": "sandiego_lebon_217",
+      "company_name": "San Diego - Lebon Drive 217",
+      "division": "real_estate",
+      "pdf_path": "C:\\Users\\user\\Dropbox\\Company Documentation & Financial Backups — Real Estate\\— Stephen's Workbench —\\San Diego — Lebon Drive 217\\2026-08-03 Mortgage Statement — NewRez — 4032.29 — Lebon Drive.pdf",
+      "file_name": "2026-08-03 Mortgage Statement — NewRez — 4032.29 — Lebon Drive.pdf",
+      "reason": "edge-likely-scan",
+      "staged_path": "files/batch_02/DOC-06.pdf"
+    },
+    {
+      "doc_id": "07",
+      "company_key": "arc",
+      "company_name": "ARC - American Renal Care",
+      "division": "dialysis",
+      "pdf_path": "G:\\My Drive\\Abdeen & Griffith\\Company Documentation & Financial Backups — Dialysis\\— Stephen's Workbench —\\ARC\\2026-07-17 Chase 6615 Check 1089 & Invoice 147103 — Ballard Rosenberg Golper & Savitt, LLP — Prado case — 1007.00 — ARC.pdf",
+      "file_name": "2026-07-17 Chase 6615 Check 1089 & Invoice 147103 — Ballard Rosenberg Golper & Savitt, LLP — Prado case — 1007.00 — ARC.pdf",
+      "reason": "diversity",
+      "staged_path": "files/batch_02/DOC-07.pdf"
+    },
+    {
+      "doc_id": "08",
+      "company_key": "rig_mhd",
+      "company_name": "RIG MHD - Renal Investment Group Mission Hills Dialysis",
+      "division": "dialysis",
+      "pdf_path": "G:\\My Drive\\Abdeen & Griffith\\Company Documentation & Financial Backups — Dialysis\\— Stephen's Workbench —\\RIG MHD\\2026-08-31 Bank Statement — F&M 1514 — RIG MHD.pdf",
+      "file_name": "2026-08-31 Bank Statement — F&M 1514 — RIG MHD.pdf",
+      "reason": "diversity",
+      "staged_path": "files/batch_02/DOC-08.pdf"
+    },
+    {
+      "doc_id": "09",
+      "company_key": "arc",
+      "company_name": "ARC - American Renal Care",
+      "division": "dialysis",
+      "pdf_path": "G:\\My Drive\\Abdeen & Griffith\\Company Documentation & Financial Backups — Dialysis\\— Stephen's Workbench —\\ARC\\2026-07-31 Invoice 556 For LCD — GlobalCare Dialysis Consultancy — July billing — 16911.07 — ARC.pdf",
+      "file_name": "2026-07-31 Invoice 556 For LCD — GlobalCare Dialysis Consultancy — July billing — 16911.07 — ARC.pdf",
+      "reason": "diversity",
+      "staged_path": "files/batch_03/DOC-09.pdf"
+    },
+    {
+      "doc_id": "10",
+      "company_key": "hip",
+      "company_name": "HIP - Healthcare Investment Properties",
+      "division": "dialysis",
+      "pdf_path": "G:\\My Drive\\Abdeen & Griffith\\Company Documentation & Financial Backups — Dialysis\\— Stephen's Workbench —\\HIP\\2026-08-01 Payment Confirmation — BRAD Management — 17000.71 — HIP.pdf",
+      "file_name": "2026-08-01 Payment Confirmation — BRAD Management — 17000.71 — HIP.pdf",
+      "reason": "diversity",
+      "staged_path": "files/batch_03/DOC-10.pdf"
+    },
+    {
+      "doc_id": "11",
+      "company_key": "arc",
+      "company_name": "ARC - American Renal Care",
+      "division": "dialysis",
+      "pdf_path": "G:\\My Drive\\Abdeen & Griffith\\Company Documentation & Financial Backups — Dialysis\\— Stephen's Workbench —\\ARC\\2025-10-15 Google Workspace HIPAA Business Associate Amendment — ARC.pdf",
+      "file_name": "2025-10-15 Google Workspace HIPAA Business Associate Amendment — ARC.pdf",
+      "reason": "diversity",
+      "staged_path": "files/batch_03/DOC-11.pdf"
+    },
+    {
+      "doc_id": "12",
+      "company_key": "rig_mhd",
+      "company_name": "RIG MHD - Renal Investment Group Mission Hills Dialysis",
+      "division": "dialysis",
+      "pdf_path": "G:\\My Drive\\Abdeen & Griffith\\Company Documentation & Financial Backups — Dialysis\\— Stephen's Workbench —\\RIG MHD\\2026-07 Bank Statement — F&M 1514 — RIG MHD.pdf",
+      "file_name": "2026-07 Bank Statement — F&M 1514 — RIG MHD.pdf",
+      "reason": "diversity",
+      "staged_path": "files/batch_03/DOC-12.pdf"
+    },
+    {
+      "doc_id": "13",
+      "company_key": "hip",
+      "company_name": "HIP - Healthcare Investment Properties",
+      "division": "dialysis",
+      "pdf_path": "G:\\My Drive\\Abdeen & Griffith\\Company Documentation & Financial Backups — Dialysis\\— Stephen's Workbench —\\HIP\\2026-08-25 Bill — Brad Management (Old Orchard) — Rent, CAM, insurance & taxes — 17000.71 — HIP.pdf",
+      "file_name": "2026-08-25 Bill — Brad Management (Old Orchard) — Rent, CAM, insurance & taxes — 17000.71 — HIP.pdf",
+      "reason": "diversity",
+      "staged_path": "files/batch_04/DOC-13.pdf"
+    },
+    {
+      "doc_id": "14",
+      "company_key": "valencia_seco_127",
+      "company_name": "Valencia - Seco Canyon Road 127",
+      "division": "real_estate",
+      "pdf_path": "C:\\Users\\user\\Dropbox\\Company Documentation & Financial Backups — Real Estate\\— Stephen's Workbench —\\Valencia — Seco Canyon Road 127\\2026-03-19 Payment & 3-19 Invoice 254 — Daniel Stegall — Paint, fans, switches, sliding doors, knobs, toilets, sink drains, epoxy, shower heads — Unit 239 — 7260.00 — Seco Cyn Rd.pdf",
+      "file_name": "2026-03-19 Payment & 3-19 Invoice 254 — Daniel Stegall — Paint, fans, switches, sliding doors, knobs, toilets, sink drains, epoxy, shower heads — Unit 239 — 7260.00 — Seco Cyn Rd.pdf",
+      "reason": "diversity",
+      "staged_path": "files/batch_04/DOC-14.pdf"
+    },
+    {
+      "doc_id": "15",
+      "company_key": "valencia_tiburon_24701",
+      "company_name": "Valencia - Tiburon Street 24701",
+      "division": "real_estate",
+      "pdf_path": "C:\\Users\\user\\Dropbox\\Company Documentation & Financial Backups — Real Estate\\— Stephen's Workbench —\\Valencia — Tiburon Street 24701\\2026-07-06 Invoice INV-2026-C2SJ194N — New Gen Services — Cleaning of filters (two) — 200.00 — Tiburon.pdf",
+      "file_name": "2026-07-06 Invoice INV-2026-C2SJ194N — New Gen Services — Cleaning of filters (two) — 200.00 — Tiburon.pdf",
+      "reason": "diversity",
+      "staged_path": "files/batch_04/DOC-15.pdf"
+    },
+    {
+      "doc_id": "16",
+      "company_key": "valencia_tiburon_24701",
+      "company_name": "Valencia - Tiburon Street 24701",
+      "division": "real_estate",
+      "pdf_path": "C:\\Users\\user\\Dropbox\\Company Documentation & Financial Backups — Real Estate\\— Stephen's Workbench —\\Valencia — Tiburon Street 24701\\2026-07-21 Payment Confirmation — Rayne Water — 130.50 — Tiburon.pdf",
+      "file_name": "2026-07-21 Payment Confirmation — Rayne Water — 130.50 — Tiburon.pdf",
+      "reason": "diversity",
+      "staged_path": "files/batch_04/DOC-16.pdf"
+    },
+    {
+      "doc_id": "17",
+      "company_key": "valencia_dm_239_10",
+      "company_name": "Valencia - Del Monte 239 & 10",
+      "division": "real_estate",
+      "pdf_path": "C:\\Users\\user\\Dropbox\\Company Documentation & Financial Backups — Real Estate\\— Stephen's Workbench —\\Valencia — Del Monte 239 & 10\\2026-07 Bank Statement — F&M 2111 — Del Monte 23910.pdf",
+      "file_name": "2026-07 Bank Statement — F&M 2111 — Del Monte 23910.pdf",
+      "reason": "diversity",
+      "staged_path": "files/batch_05/DOC-17.pdf"
+    },
+    {
+      "doc_id": "18",
+      "company_key": "vegas_lenox_9837",
+      "company_name": "Las Vegas - Lenox Crest Place 9837",
+      "division": "real_estate",
+      "pdf_path": "C:\\Users\\user\\Dropbox\\Company Documentation & Financial Backups — Real Estate\\— Stephen's Workbench —\\Las Vegas — Lenox Crest Place 9837\\2026-07-28 Owner Statement — Peace Realty — Lenox Crest.pdf",
+      "file_name": "2026-07-28 Owner Statement — Peace Realty — Lenox Crest.pdf",
+      "reason": "diversity",
+      "staged_path": "files/batch_05/DOC-18.pdf"
+    },
+    {
+      "doc_id": "19",
+      "company_key": "brea_granada_3037",
+      "company_name": "Brea - Granada Circle 3037",
+      "division": "real_estate",
+      "pdf_path": "C:\\Users\\user\\Dropbox\\Company Documentation & Financial Backups — Real Estate\\— Stephen's Workbench —\\Brea — Granada Circle 3037\\2026-08-15 LLC Statement Of Information — California Secretary of State — 25.00 — Granada Circle.pdf",
+      "file_name": "2026-08-15 LLC Statement Of Information — California Secretary of State — 25.00 — Granada Circle.pdf",
+      "reason": "diversity",
+      "staged_path": "files/batch_05/DOC-19.pdf"
+    },
+    {
+      "doc_id": "20",
+      "company_key": "vegas_pompei_10341",
+      "company_name": "Las Vegas - Pompei Place 10341",
+      "division": "real_estate",
+      "pdf_path": "C:\\Users\\user\\Dropbox\\Company Documentation & Financial Backups — Real Estate\\— Stephen's Workbench —\\Las Vegas — Pompei Place 10341\\2026-08-31 Owner Statement — Peace Realty — Pompei Place.pdf",
+      "file_name": "2026-08-31 Owner Statement — Peace Realty — Pompei Place.pdf",
+      "reason": "diversity",
+      "staged_path": "files/batch_05/DOC-20.pdf"
+    },
+    {
+      "doc_id": "21",
+      "company_key": "valencia_dm_200_201",
+      "company_name": "Valencia - Del Monte 200 & 201",
+      "division": "real_estate",
+      "pdf_path": "C:\\Users\\user\\Dropbox\\Company Documentation & Financial Backups — Real Estate\\— Stephen's Workbench —\\Valencia — Del Monte 200 & 201\\2026-08-09 Payment Confirmation — Daniel Stegall — Unit 200 — Invoice 259 air conditional repairs — 106.00 — Del Monte 200201.pdf",
+      "file_name": "2026-08-09 Payment Confirmation — Daniel Stegall — Unit 200 — Invoice 259 air conditional repairs — 106.00 — Del Monte 200201.pdf",
+      "reason": "diversity",
+      "staged_path": "files/batch_06/DOC-21.pdf"
+    },
+    {
+      "doc_id": "22",
+      "company_key": "valencia_victoria_63_96",
+      "company_name": "Valencia - Victoria 63 & 96",
+      "division": "real_estate",
+      "pdf_path": "C:\\Users\\user\\Dropbox\\Company Documentation & Financial Backups — Real Estate\\— Stephen's Workbench —\\Valencia — Victoria 63 & 96\\2026-07-01 Invoice N1160132761 — Burrtec — 100.74 — Unit 63 — Victoria 6396.pdf",
+      "file_name": "2026-07-01 Invoice N1160132761 — Burrtec — 100.74 — Unit 63 — Victoria 6396.pdf",
+      "reason": "diversity",
+      "staged_path": "files/batch_06/DOC-22.pdf"
+    },
+    {
+      "doc_id": "23",
+      "company_key": "valencia_dm_59_62",
+      "company_name": "Valencia - Del Monte 59 & 62",
+      "division": "real_estate",
+      "pdf_path": "C:\\Users\\user\\Dropbox\\Company Documentation & Financial Backups — Real Estate\\— Stephen's Workbench —\\Valencia — Del Monte 59 & 62\\2026-07-13 BofA 2265 Checks 2833 & 2834 — Scott Hughes — Unit 59 — 11760.00 — Del Monte 5962.pdf",
+      "file_name": "2026-07-13 BofA 2265 Checks 2833 & 2834 — Scott Hughes — Unit 59 — 11760.00 — Del Monte 5962.pdf",
+      "reason": "diversity",
+      "staged_path": "files/batch_06/DOC-23.pdf"
+    },
+    {
+      "doc_id": "24",
+      "company_key": "sandiego_lebon_217",
+      "company_name": "San Diego - Lebon Drive 217",
+      "division": "real_estate",
+      "pdf_path": "C:\\Users\\user\\Dropbox\\Company Documentation & Financial Backups — Real Estate\\— Stephen's Workbench —\\San Diego — Lebon Drive 217\\2026-07-03 Mortgage Statement — NewRez — 7868.45 — Lebon Drive.pdf",
+      "file_name": "2026-07-03 Mortgage Statement — NewRez — 7868.45 — Lebon Drive.pdf",
+      "reason": "diversity",
+      "staged_path": "files/batch_06/DOC-24.pdf"
+    }
+  ]
+}

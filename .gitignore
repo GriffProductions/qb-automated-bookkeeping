@@ -1,0 +1,7 @@
+﻿@__pycache__/
+*.pyc
+.venv/
+.env
+data/*.json
+data/browser_test_kit/files/
+!data/.gitkeep

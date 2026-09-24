@@ -1,0 +1,21 @@
+# Core
+pydantic>=2.7
+python-dotenv>=1.0
+
+# PDF text extraction (plumber preferred, pypdf fallback)
+pdfplumber>=0.11
+pypdf>=4.2
+
+# OCR fallback for scanned/image-only PDFs (Tesseract 5.x binary + render via pypdfium2)
+pypdfium2>=4.0
+pytesseract>=0.3
+Pillow>=10.0
+
+# LLM - Gemini / Vertex AI via LangChain (structured output)
+langchain>=0.3
+langchain-google-genai>=2.0
+google-cloud-aiplatform>=1.71
+google-generativeai>=0.8
+
+# Tests
+pytest>=8.0
