@@ -7,3 +7,5 @@ data/browser_test_kit/files/
 data/qbxml/
 data/staged/
 !data/.gitkeep
+
+data/*.bak
