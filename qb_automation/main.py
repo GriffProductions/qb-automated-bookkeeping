@@ -82,6 +82,33 @@ def _parse_kv(pairs: list[str] | None, kind: str) -> dict[str, str]:
     return out
 
 
+def _append_review_log(log_path: Path, entry: dict) -> None:
+    """Append one entry to the JSON review log under an exclusive lock.
+
+    Parallel approves used to interleave read-modify-write cycles and corrupt
+    the file (trailing `]` fragments); the lock serializes them.
+    """
+    import json as _json
+    import time as _time
+
+    lock_path = log_path.with_suffix(".json.lock")
+    for _ in range(100):
+        try:
+            fd = open(lock_path, "x")
+            fd.close()
+            break
+        except FileExistsError:
+            _time.sleep(0.1)
+    else:
+        raise TimeoutError(f"Could not lock {log_path}")
+    try:
+        entries = _json.loads(log_path.read_text(encoding="utf-8")) if log_path.exists() else []
+        entries.append(entry)
+        log_path.write_text(_json.dumps(entries, indent=2), encoding="utf-8")
+    finally:
+        lock_path.unlink(missing_ok=True)
+
+
 def cmd_review_one(args: argparse.Namespace) -> int:
     """Interactive single-file review: extract → card → pick/set → approve.
 
@@ -309,9 +336,7 @@ def cmd_review_one(args: argparse.Namespace) -> int:
              "rotation": {"rotate": args.rotate, "rotate_pages": args.rotate_pages},
              "approved_at": datetime.now(timezone.utc).isoformat(),
              "qbxml": str(qbxml_path)}
-    log_entries = json.loads(log_path.read_text(encoding="utf-8")) if log_path.exists() else []
-    log_entries.append(entry)
-    log_path.write_text(json.dumps(log_entries, indent=2), encoding="utf-8")
+    _append_review_log(log_path, entry)
     print(f"APPROVED -> {qbxml_path}")
     return 0
 

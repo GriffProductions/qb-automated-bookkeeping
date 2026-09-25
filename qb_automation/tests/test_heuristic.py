@@ -339,4 +339,4 @@ def test_bill_without_invoice_number_heads_as_bill():
 def test_numbered_bill_keeps_invoice_head():
     text=("SCV Water Invoice Date 09/09/2026 Invoice 22152302 Total 184.81")
     t = extract_transaction(text=text, company_key="valencia_tiburon_24701", use_llm=False)
-    assert t.suggested_filename.startswith("2026-09-09 Invoice \u2014 Invoice 22152302")
+    assert t.suggested_filename.startswith("2026-09-09 Invoice 22152302 \u2014 SCV Water")

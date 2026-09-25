@@ -866,6 +866,12 @@ def _heuristic_extract(text: str, company_key: str, source_name: str = "",
         ref = f"Invoice {inv_no}" if (doc_type == "Invoice" and inv_no) else None
         if ref is None:
             ref = _find_ref(text + " " + Path(source_name).name if source_name else text)
+        if ref is not None:
+            # Fold "DATE Invoice — Invoice 566" into "DATE Invoice 566".
+            first, _, rest = ref.partition(" ")
+            if rest and head.lower().endswith(first.lower()):
+                head = f"{head} {rest}"
+                ref = None
         vendor_seg, unit_seg = vendor, unit
     pay_method = _find_pay_method(text)
     # Memo detail (e.g. LADWP "Electricity & water") rides its own segment
