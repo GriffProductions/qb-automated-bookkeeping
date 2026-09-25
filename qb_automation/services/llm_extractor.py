@@ -475,6 +475,10 @@ def _find_amount(text: str, *, is_mortgage: bool = False) -> float:
     """Amount resolution order: mortgage principal → amount-due proximity →
     total/balance proximity → largest value.  Proximity-first so OCR-collapsed
     text (no line breaks) resolves the same as clean text."""
+    # OCR spacing artifacts ("2 2,369.73" = one split number): join before
+    # any amount math.  The comma requirement keeps dates ("SEP 02 2026")
+    # and spaced check digits ("2 6 7 2") untouched.
+    text = re.sub(r"(?<=\d) (?=\d,\d)", "", text)
     if is_mortgage:
         got = _nearest_after(text, _PRINCIPAL_RE)
         if got is not None:
@@ -656,6 +660,8 @@ def _invoice_amount(text: str) -> float | None:
     keeps the invoice total; bare "invoice" words (table headers, footers)
     are only a last resort.
     """
+    # Same OCR-spacing scrub as _find_amount ("2 2,369.73" → "22,369.73").
+    text = re.sub(r"(?<=\d) (?=\d,\d)", "", text)
     head = text[:4000]
 
     def _after(pat: "re.Pattern[str]") -> float | None:

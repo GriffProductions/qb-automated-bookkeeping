@@ -249,6 +249,15 @@ def test_globalcare_is_invoice_with_invoice_amount():
     assert t.amount == 881727.95  # invoice total, not the backup summary max
 
 
+def test_ocr_split_thousands_rejoined():
+    # "Collection for NKC 2 2,369.73" is one OCR-split number, not 2 + 2369.73.
+    text=("INVOICE DATE 8/31/2026 INVOICE # 565 "
+          "Billing Service Charges on Aug 25 Collection for NKC 2 2,369.73 "
+          "Subtotal 2 2,369.73 TOTAL $ 2 2,369.73")
+    t = extract_transaction(text=text, company_key="arc", use_llm=False)
+    assert t.amount == 22369.73
+
+
 def test_ladwp_is_bill_with_utility_memo():
     text=("Los Angeles DWP Bill Date Sep 9 2026 Account 123 total 616.05 "
           "enroll in autopay to pay your bill")
