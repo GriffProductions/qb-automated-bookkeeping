@@ -52,6 +52,28 @@ DIALYSIS_ROOT: Path = _resolve_root(
 WORKBENCH_DIRNAME_FRAGMENTS = ("Workbench",)
 BACKUP_DIRNAME_FRAGMENTS = ("QuickBooks Backups",)
 
+# --- QuickBooks Desktop company files (live .qbw, OneDrive) ------------------
+# Read-only access via the SDK; the harvester never writes here.
+QB_COMPANY_ROOT: Path = _resolve_root(
+    r"C:\Users\user\OneDrive\Documents\QuickBooks\Company*",
+    "QB_COMPANY_ROOT",
+    r"C:\Users\user\OneDrive\Documents\QuickBooks\Company Files — QB",
+)
+CHART_OF_ACCOUNTS_PATH = Path(
+    os.getenv("QB_CHART_PATH", str(DATA_DIR / "chart_of_accounts.json"))
+)
+VENDORS_PATH = Path(
+    os.getenv("QB_VENDORS_PATH", str(DATA_DIR / "vendors.json"))
+)
+CLASSES_PATH = Path(
+    os.getenv("QB_CLASSES_PATH", str(DATA_DIR / "classes.json"))
+)
+# Per-PDF page-rotation memory: {pdf_name: {"rotate": int, "rotate_pages": str}}.
+# review-one auto-applies stored specs unless flags override them.
+ROTATIONS_PATH = Path(
+    os.getenv("QB_ROTATIONS_PATH", str(DATA_DIR / "rotations.json"))
+)
+
 # --- GCP / Gemini settings -------------------------------------------------
 GCP_PROJECT = os.getenv("GCP_PROJECT", "")
 GCP_LOCATION = os.getenv("GCP_LOCATION", "us-central1")

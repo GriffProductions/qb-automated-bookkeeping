@@ -14,6 +14,17 @@ Rules you must follow:
   unit tags (Unit 200) or clinic codes (SCD/NKC/LCD/MHD), detail. Amount (1234.56, negatives
   allowed) sits second-to-last WHEN PRESENT — bank/owner/ledger statements omit it.
 - Last segment is always the short company tag. Amount is the total (never rates like 2.25 %).
+- Mortgage amount is the OUTSTANDING PRINCIPAL balance, never the amount due.
+- SPELL-OUT RULE: facility abbreviations (HIP, ARC, RIG, SIP) appear ONLY as the
+  trailing tag. As vendor or associated company, spell out the full name.
+- ARC SPECIAL CASES: American Renal Care billing a clinic reads
+  "DATE Invoice — Invoice <N> to <Full Clinic Name> — <amount> — ARC" (no vendor
+  segment). GlobalCare invoices read "DATE … — Invoice <N> — GlobalCare —
+  <Spelled-Out Facility> — <amount> — ARC".
+- Checks run on the CHECK date: "DATE Check <N> & Bill" (or & Invoice).
+- Statements stay statements ("DATE HOA Statement") — autopay blurbs are not payment proof.
+- Bills/invoices default to the INVOICE/BILL date, never due dates. Payment date
+  applies only with real payment proof ("DATE Payment Confirmation and Invoice <N>").
 - I will attach PDFs and give per-company context + example names. IMITATE them.
 - Reply with EXACTLY one block per document, no explanations, no extra text:
 

@@ -24,6 +24,17 @@ class ExtractedTransaction(BaseModel):
     )
     header_memo: str = Field(default="", description="Header-level memo (QB Memo field)")
     ledger_memo: str = Field(default="", description="Line-item memo (QB line Memo field)")
+    check_no: Optional[str] = Field(
+        default=None,
+        description="Check number when the source includes a check image "
+        "(routes qbXML to CheckAddRq and builds a 'Check N & …' filename)",
+    )
+    check_present: bool = Field(
+        default=False,
+        description="A check image is present but its number is illegible "
+        "(e.g. rotated scan) — routes to CheckAddRq with a 'Check & …' head; "
+        "supply the number via --set check=N when known",
+    )
     suggested_filename: str = Field(
         ...,
         description="Standardized filename WITHOUT extension, segments joined by "

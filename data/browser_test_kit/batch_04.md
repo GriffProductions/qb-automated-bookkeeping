@@ -9,37 +9,57 @@ Name it like these:
 - 12-23-24 Reimbursement of Property Insurance & 12-23-24 Property Itemization (Foothill & Laurel Canyon) — Mike Haffar Insurance Services — 8009.74 — HIP.pdf
 - 2026-02-24 Chase 9556 Check 6105 & Annual Business Renewal Form — City of Los Angeles Office of Finance — Account 0002639008-0001-1 — 1065.72 — HIP.pdf
 
-Document text: SENDPAYMENTTO STATEMENTASOFAUGUST25,2026 BRADManagement 11301W.OlympicBlvd#840 (310)694-0447 LosAngeles,CA90064 https://bradmanagement.com PleaseaddressbillingdisputesandwritteninquiriestoBRAD Management,11301W.OlympicBlvd#840,LosAngeles,CA 90064.Forotherquestions,call(310)694-0447 TOTALAMOUNTDUE $17,000.71 STATEMENTFOR HealthcareInvestments 23421 PAYTHISBILLONLINEAT https://bradmanagement.appfolio.com/connect SantaClarita,CA91355 UNITADDRESS 23421 LyonsAve SantaClarita,CA91355 DATE DESCRIPTION TIMEPERIOD AMOUNT BALANCE CURRENT&UPCOMINGCHARGES 01SEP RENT SEPTEMBER2026 $11,890.74 $11,890.74 COMMONAREAMAINTENANCE 01SEP SEPTEMBER2026 $2,837.97 $14,728.71 INCOME 01SEP INSURANCEINCOME SEPTEMBER2026 $374.19 $15,102.90 01SEP TAXINCOME SEPTEMBER2026 $1,897.81 $17,000.71
+Document text: Stephen Griffith <stephen@americanrenalcare.com>
+Fw: BRAD Management - Online Payment Confirmation
+1 message
+Omaran Abdeen <abdeen@yahoo.com> Sat, Sep 5, 2026 at 7:30 PM
+Reply-To: Omaran Abdeen <abdeen@yahoo.com>
+To: Stephen Griffith <stephen@americanrenalcare.com>
+HIP
+----- Forwarded Message -----
+From: BRAD Management <donotreply@appfolio.com>
+To: "abdeen@yahoo.com" <abdeen@yahoo.com>
+Sent: Tuesday, September 1, 2026 at 06:29:32 AM PDT
+Subject: BRAD Management - Online Payment Confirmation
+Hello Omaran Abdeen, M.D.,
+Thank you for your automatic payment of $17,000.71 on 09/01/2026. Your
+confirmation number is 8961-3390.
+To make future payments, or to edit or end this automatic payment, please
+visit your online portal at any time.
+Thank you for choosing BRAD Management.
+BRAD Management
+(310) 694-0447
+bradmanagement.com
 
 ## DOC-14 — attached as DOC-14.pdf
-Company: Valencia - Seco Canyon Road 127 | tag: Seco, 127 Seco Canyon Road, Seco Cyn Rd | 302 files seen
-Vendors here: Scenic Hills, Culligan of Sylmar, PNC Bank, Seco Canyon HOA, Seco Canyon Homeowners Association, Burrtec. Units: Unit 96, Unit 239. Pay via: —.
-Amount present ~49% of names.
+Company: Las Vegas - Sondrio Drive 1920 | tag: Sondrio Drive, Series 1, Sondrio Drive, Sondrio | 312 files seen
+Vendors here: Peace Realty, PHH Mortgage, Summary, Detail, Republic Services, Sewer Services. Units: none seen. Pay via: BoN 4545.
+Amount present ~28% of names.
 Name it like these:
-- 2025-08-25 BofA 2265 & 8-21 Invoice 105 — Daniel Stegall — Unit 96 — Second payment for water-heater replacement — 488.00 — Victoria 6396.pdf
-- 2025-10-13 BofA 2265 Payment & Annual Secured Property Tax Bill — Los Angeles County Treasurer and Tax Collector — 8095.46 — Seco Cyn.pdf
-- 10-21-24 Payment & 2024 Annual Secured Property Tax Bill — Los Angeles County Treasurer and Tax Collector — 7838.26 — Seco Canyon Rd.pdf
+- 2025-02-28 BofA 2265 Check 2582 & 02-18-25 Renewal Certificate — State Farm — Policy 98-BZ-Q171-0 — 4-13-25 to 4-13-26 — 783.00 — Sondrio Drive.pdf
+- 11-02-23 Email Quote & 11-04-23 BofA Check 2193 & 12-09-23 BofA Check 2439 & Twenty One Photos — Landscaping & Pipe Repair — Sondrio.pdf
+- 10-31-24 Payment Confirmation — City of Las Vegas (Sewer Services) — Quarterly waste removal — 77.99 — Series 1, Sondrio Drive.pdf
 
 Document text: (none embedded — this one NEEDS its PDF attached)
 
 ## DOC-15 — attached as DOC-15.pdf
-Company: Valencia - Tiburon Street 24701 | tag: Tiburon, Valencia Tiburon, Tiburon St | 879 files seen
-Vendors here: AT&T, SCV Water, SoCalGas, Southern California Edison, Detail, Summary. Units: none seen. Pay via: F&M 6486.
-Amount present ~54% of names.
+Company: Valencia - Del Monte 200 & 201 | tag: Del Monte 200201, Valencia Del Monte 200201, Del Monte 200201 LLC | 406 files seen
+Vendors here: Scenic Hills, Detail, Summary, Daniel Stegall, State Farm, Siena Villas Homeowners Association. Units: Unit 200, Unit 201. Pay via: F&M 2138.
+Amount present ~10% of names.
 Name it like these:
-- 03-23-24 BofA Check 2473 & 03-21-24 Supplemental Secured Property Tax Bill —  Los Angeles County Tax Collector — July 1, 2022 to June 30, 2023 — 716.60 — Valencia Tiburon.pdf
-- 2026-03-08 BofA 2265 Check 2873 & Invoices 620097 619984 620118 620049 620167 620098 620070 620147 620135 620110 620176 620010 — Lucove Say & Co. — 1800.00 — Tiburon St.pdf
-- 2025-12-11 BofA 2265 Payment & 12-11 Invoice 619 — Daniel Stegall — Lights, drain, toilet seat, ceiling repair, painting, cabinet door, AC filters — 1061.00 — Tiburon.pdf
+- 02-04-24 F&M Payment Confirmations (2) & Notice of Balance Due & Account Period Summaries (2) — Franchise Tax Board — State taxes for 2020 & 2022 — 58.71 & 51.15 — Valencia Del Monte 200201.PDF
+- 2025-08-22 BofA 2265 & 8-21 Invoice 1065 — Daniel Stegall (Just Rite Air, LLC) — AC inspection & repair of drain line — Unit 200 — 435.00 — Del Monte 200201.pdf
+- 05-03-24 Visa 6641 Payment Confirmation & Renewal Certificate — State Farm — Rental Condominium Unitowners Policy — Unit 201 — 712.00 — Del Monte 200201.pdf
 
 Document text: (none embedded — this one NEEDS its PDF attached)
 
 ## DOC-16 — attached as DOC-16.pdf
-Company: Valencia - Tiburon Street 24701 | tag: Tiburon, Valencia Tiburon, Tiburon St | 879 files seen
-Vendors here: AT&T, SCV Water, SoCalGas, Southern California Edison, Detail, Summary. Units: none seen. Pay via: F&M 6486.
-Amount present ~54% of names.
+Company: San Diego - Lebon Drive 217 | tag: Lebon Drive, Lebon, Lebon217 | 217 files seen
+Vendors here: Utopia Management, NewRez, La Jolla Garden Villas Condo. Corp., La Jolla Garden Villas Condominium Corporation, La Jolla Garden Villas, La Jolla Garden Villas Condo. Co.. Units: none seen. Pay via: Visa 1152.
+Amount present ~43% of names.
 Name it like these:
-- 03-23-24 BofA Check 2473 & 03-21-24 Supplemental Secured Property Tax Bill —  Los Angeles County Tax Collector — July 1, 2022 to June 30, 2023 — 716.60 — Valencia Tiburon.pdf
-- 2026-03-08 BofA 2265 Check 2873 & Invoices 620097 619984 620118 620049 620167 620098 620070 620147 620135 620110 620176 620010 — Lucove Say & Co. — 1800.00 — Tiburon St.pdf
-- 2025-12-11 BofA 2265 Payment & 12-11 Invoice 619 — Daniel Stegall — Lights, drain, toilet seat, ceiling repair, painting, cabinet door, AC filters — 1061.00 — Tiburon.pdf
+- 07-05-24 Payment Confirmation — La Jolla Garden Villas Condo. Co. — HOA payment, special key fee & proportional convenience fee — 750.22 — Lebon.pdf
+- 12-29-24 Conveyance Invoice to Utopia Management — San Diego District Office — Notice of fee plus penalty due — 225.00 — Lebon Drive.pdf
+- 10-10-24 BofA 2265 Payment & Annual Secured Property Tax Bill — San Diego County Treasurer Tax Collector — 5527.86 — Lebon Drive.pdf
 
-Document text: Account Selection Account Detail Log Out Thank You For Your Payment. Payments usually post within two business days. Please Print This Page For Your Records. Transaction Details Date 7/21/2026 5:38:14 PM Visa Card ...4267 Payment Amount $130.50 Applied To Account 176081 Result APPROVED Authorization Code 04473D
+Document text: (none embedded — this one NEEDS its PDF attached)

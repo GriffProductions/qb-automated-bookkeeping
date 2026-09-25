@@ -20,6 +20,27 @@ log = logging.getLogger(__name__)
 
 MIN_TEXT_CHARS = 100  # below this a PDF counts as "needs OCR"
 
+# Mean Tesseract word-confidence below this retries other orientations.
+# Garbage OCR from a sideways page scores ~10-35; readable text scores 70+.
+ORIENT_MIN_CONF = 50.0
+
+
+def _ocr_text_and_conf(bitmap, lang: str = "eng") -> tuple[str, float]:
+    """One OCR pass returning ``(cleaned_text, mean_word_confidence)``."""
+    import pytesseract
+
+    try:
+        data = pytesseract.image_to_data(
+            bitmap, lang=lang, output_type=pytesseract.Output.DICT)
+        confs = [float(c) for c in data["conf"] if float(c) >= 0]
+        conf = sum(confs) / len(confs) if confs else 0.0
+        text = " ".join(w for w in data["text"]
+                        if isinstance(w, str) and w.strip())
+    except Exception:  # noqa: BLE001 - fall back to plain string OCR
+        text = pytesseract.image_to_string(bitmap, lang=lang) or ""
+        conf = float(_alpha_score(text) > 0) * ORIENT_MIN_CONF
+    return re.sub(r"\s+", " ", text).strip(), conf
+
 
 def needs_ocr(text: str, min_chars: int = MIN_TEXT_CHARS) -> bool:
     return len((text or "").strip()) < min_chars
@@ -51,6 +72,21 @@ def ocr_pdf_to_text(
         FileNotFoundError: if ``pdf_path`` does not exist.
         RuntimeError: if the OCR stack (pypdfium2/pytesseract/binary) is missing.
     """
+    pages = ocr_pages_to_text(pdf_path, list(range(max_pages)), dpi=dpi, lang=lang)
+    ordered = [pages[i] for i in sorted(pages)]
+    return ("\n".join(t for t in ordered if t).strip(), len(ordered))
+
+
+def ocr_pages_to_text(
+    pdf_path: Path,
+    pages: list[int],
+    dpi: int = 200,
+    lang: str = "eng",
+) -> dict[int, str]:
+    """OCR selected 0-based pages.  Returns ``{pageno: text}`` (missing = failed).
+
+    Each page is auto-oriented by confidence (sideways check scans recover).
+    """
     pdf_path = Path(pdf_path)
     if not pdf_path.exists():
         raise FileNotFoundError(f"PDF not found: {pdf_path}")
@@ -59,8 +95,8 @@ def ocr_pdf_to_text(
     except ImportError as exc:
         raise RuntimeError("OCR needs pypdfium2 (pip install pypdfium2)") from exc
     try:
-        import pytesseract
-        from PIL import Image
+        import pytesseract  # noqa: F401
+        from PIL import Image  # noqa: F401
     except ImportError as exc:
         raise RuntimeError("OCR needs pytesseract+Pillow (pip install pytesseract pillow)") from exc
     import shutil
@@ -69,21 +105,46 @@ def ocr_pdf_to_text(
         raise RuntimeError("Tesseract binary not found on PATH")
 
     scale = dpi / 72.0
-    text_parts: list[str] = []
-    pages_done = 0
+    out: dict[int, str] = {}
     pdf = pdfium.PdfDocument(str(pdf_path))
     try:
-        for i, page in enumerate(pdf):
-            if i >= max_pages:
-                break
-            bitmap = page.render(scale=scale).to_pil()
+        count = len(pdf)
+        for i in pages:
+            if i < 0 or i >= count:
+                continue
+            bitmap = pdf[i].render(scale=scale).to_pil()
             if bitmap.mode != "RGB":
                 bitmap = bitmap.convert("RGB")
-            page_text = pytesseract.image_to_string(bitmap, lang=lang) or ""
-            page_text = re.sub(r"\s+", " ", page_text).strip()
+            page_text = _ocr_best_orientation(bitmap, lang=lang)
             if page_text:
-                text_parts.append(page_text)
-            pages_done += 1
+                out[i] = page_text
     finally:
         pdf.close()
-    return (" ".join(text_parts).strip(), pages_done)
+    return out
+
+
+def _alpha_score(s: str) -> int:
+    return sum(1 for ch in s if ch.isalpha())
+
+
+def _ocr_best_orientation(bitmap, lang: str = "eng") -> str:
+    """OCR upright first; retry rotated when confidence says garbage.
+
+    Sideways check scans yield thousands of garbage *letters* (so the old
+    alpha-count trigger never fired) but very low mean word-confidence.
+    We retry 90/180/270 and keep the most confident result — typically the
+    difference between an unreadable check and "Check 2672 9/19/2026".
+    Costs extra passes only when the upright read scores poorly.
+    """
+    best, best_conf = _ocr_text_and_conf(bitmap, lang=lang)
+    if best_conf >= ORIENT_MIN_CONF:
+        return best
+    for angle in (90, 180, 270):
+        try:
+            rotated = bitmap.rotate(angle, expand=True)
+            candidate, conf = _ocr_text_and_conf(rotated, lang=lang)
+        except Exception:  # noqa: BLE001 - rotation/OCR best-effort
+            continue
+        if conf > best_conf:
+            best, best_conf = candidate, conf
+    return best

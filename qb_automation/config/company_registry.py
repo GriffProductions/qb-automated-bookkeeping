@@ -213,3 +213,46 @@ COMPANY_ALIASES: dict[str, str] = {
     "santaclarita": "arc",
     "missionhills": "rig_mhd",
 }
+
+
+# Live QuickBooks folder names (OneDrive "Company Files — QB" tree) → key.
+# These are shorter/LLC-suffixed variants the fragment matcher misses
+# ("Pompei Place" vs fragment "Pompei Place 10341"), matched with boundaries.
+QB_FOLDER_ALIASES: dict[str, str] = {
+    "valencia paz": "valencia_paz_28754",
+    "brea granada": "brea_granada_3037",
+    "ivy point": "vegas_ivypoint_1920",
+    "lenox crest": "vegas_lenox_9837",
+    "pompei place": "vegas_pompei_10341",
+    "singing wind": "vegas_singingwind_10240",
+    "sondrio drive": "vegas_sondrio_1920",
+    "san diego lebon": "sandiego_lebon_217",
+    "valencia masters": "valencia_masters_24655",
+    "valencia northbrooke": "valencia_northbrooke_23347",
+    "valencia seco": "valencia_seco_127",
+    "valencia tiburon": "valencia_tiburon_24701",
+    "del monte 5962": "valencia_dm_59_62",
+    "american renal care": "arc",
+    "healthcare investment properties": "hip",
+    "healthcare management services": "hms",
+    "renal investment group mhd": "rig_mhd",
+    "mission hills": "rig_mhd",
+    "renal investment group": "rig",
+    "renal management services": "rms",
+    "renal therapeutics": "rt",
+    "sylmar investment properties": "sip",
+    "sylmar pacoima dialysis": "spd",
+}
+
+
+def match_qb_folder_to_company(folder_name: str) -> Company | None:
+    """Match a live-QB company folder (falls back to fragment matching)."""
+    import re as _re
+
+    lowered = _norm(folder_name)
+    for alias, key in sorted(QB_FOLDER_ALIASES.items(), key=lambda kv: -len(kv[0])):
+        if _re.search(r"(?<!\w)" + _re.escape(alias) + r"(?!\w)", lowered):
+            company = _BY_KEY.get(key)
+            if company is not None:
+                return company
+    return match_folder_to_company(folder_name)

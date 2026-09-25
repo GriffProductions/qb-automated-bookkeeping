@@ -37,8 +37,12 @@ def extract_text_with_provenance(
     """Same as :func:`extract_text_from_pdf` plus the method used.
 
     Method is one of ``pdfplumber`` | ``pypdf`` | ``ocr`` | ``empty``.
+    Pages are handled individually: embedded text wins per page, and only
+    image-only pages pay for OCR (with confidence auto-orientation).  This
+    catches check images hiding inside mixed PDFs whose other pages carry
+    real text (e.g. renewal certificate + sideways check scan).
     """
-    from qb_automation.services.ocr import MIN_TEXT_CHARS, needs_ocr, ocr_pdf_to_text
+    from qb_automation.services.ocr import MIN_TEXT_CHARS, needs_ocr, ocr_pages_to_text
 
     max_chars = max_chars or settings.PDF_MAX_TEXT_CHARS
     text, method = "", "empty"
@@ -46,32 +50,58 @@ def extract_text_with_provenance(
         import pdfplumber
 
         with pdfplumber.open(str(pdf_path)) as pdf:
-            parts = [(p.extract_text() or "") for p in pdf.pages]
-        text = "\n".join(parts).strip()
-        if text.strip():
-            method = "pdfplumber"
+            plumber_parts = [(p.extract_text() or "") for p in pdf.pages]
+        n = len(plumber_parts)
     except Exception as exc:  # noqa: BLE001 - optional dep / scanned PDFs
         log.debug("pdfplumber failed for %s: %s", pdf_path, exc)
-    if not text.strip():
+        plumber_parts = []
+        n = 0
+    if not plumber_parts:
         try:
             from pypdf import PdfReader
 
             reader = PdfReader(str(pdf_path))
-            text = "\n".join([(p.extract_text() or "") for p in reader.pages]).strip()
-            if text.strip():
-                method = "pypdf"
+            n = len(reader.pages)
+            plumber_parts = [""] * n
+            pypdf_parts = [(p.extract_text() or "") for p in reader.pages]
         except Exception as exc:  # noqa: BLE001
             log.warning("Could not extract text from %s: %s", pdf_path, exc)
             return "", "empty"
-    if needs_ocr(text, MIN_TEXT_CHARS) and enable_ocr:
+    else:
+        pypdf_parts = [""] * n
+    if n == 0:
+        return "", "empty"
+
+    parts: list[str] = []
+    ocr_used = False
+    empty_pages: list[int] = []
+    for i in range(n):
+        page_text = (plumber_parts[i] if i < len(plumber_parts) else "").strip()
+        if not page_text and i < len(pypdf_parts):
+            page_text = (pypdf_parts[i] or "").strip()
+        if needs_ocr(page_text, MIN_TEXT_CHARS):
+            empty_pages.append(i)
+        parts.append(page_text)
+    if empty_pages and enable_ocr:
         try:
-            ocr_text, _pages = ocr_pdf_to_text(Path(pdf_path))
-            if len(ocr_text.strip()) > len(text.strip()):
-                text, method = ocr_text, "ocr"
+            # Cap OCR pages (front-loaded content decides amounts/dates).
+            occluded = ocr_pages_to_text(Path(pdf_path), empty_pages[:6])
+            for i, ocr_text in occluded.items():
+                if len(ocr_text.strip()) > len(parts[i].strip()):
+                    parts[i] = ocr_text
+                    ocr_used = True
         except Exception as exc:  # noqa: BLE001 - OCR stack optional
             log.debug("OCR fallback failed for %s: %s", pdf_path, exc)
-    # Normalize whitespace, cap length
-    text = re.sub(r"\s+", " ", text).strip()
+    text = "\n".join(parts).strip()
+    if text.strip():
+        method = "ocr" if ocr_used else ("pdfplumber" if any(
+            p.strip() for p in plumber_parts) else "pypdf")
+    else:
+        method = "empty"
+    # Normalize whitespace but PRESERVE line breaks — downstream amount/date
+    # logic depends on line context ("Amount Due $X" lines, ranges, tables).
+    lines = [re.sub(r"[ \t\u00a0]+", " ", ln).strip() for ln in text.splitlines()]
+    text = "\n".join([ln for ln in lines if ln]).strip()
     if not text:
         method = "empty"
     return text[:max_chars], method
