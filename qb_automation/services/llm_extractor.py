@@ -180,24 +180,30 @@ _CHECK_PRESENCE_RES = (
 def _find_spaced_check_no(text: str) -> str | None:
     """Check number when OCR spaces its digits (``2 6 7 2`` on check scans).
 
-    Looks within 60 chars after a ``check``/``checks`` mention.  Guards:
-    runs touching ``-``/``/`` (phones, routing, dates) are skipped, as are
-    19xx/20xx years.  Returns the first surviving 3–6 digit run.
+    Groups consecutive pure-digit tokens within 80 chars after a
+    ``check``/``checks`` mention: ``2 6 7 2`` → ``2672``, while phone
+    fragments (``1-800-224-7021``), dates (``11-35/1210``), amounts
+    (``1,139.74``), MICR runs (10+ digits) and 19xx/20xx years are skipped
+    because their tokens are never pure 3–6 digit runs.  First valid group wins.
     """
     window = text[:3000]
     for m in re.finditer(r"(?i)\bchecks?\b", window):
-        tail = window[m.end():m.end() + 60]
-        for run in re.finditer(r"(\d(?: ?\d){2,5})(?!\d)", tail):
-            start = m.end() + run.start()
-            before = window[start - 1] if start > 0 else " "
-            end = m.end() + run.end()
-            after = window[end] if end < len(window) else " "
-            if before in "-/\\" or after in "-/":
-                continue
-            digits = run.group(1).replace(" ", "")
-            if len(digits) == 4 and digits[:2] in ("19", "20"):
-                continue
-            return digits
+        tail = window[m.end():m.end() + 80]
+        tokens = tail.split()
+        i = 0
+        while i < len(tokens):
+            if re.fullmatch(r"\d+", tokens[i]):
+                group = tokens[i]
+                j = i + 1
+                while j < len(tokens) and re.fullmatch(r"\d+", tokens[j]):
+                    group += tokens[j]
+                    j += 1
+                if 3 <= len(group) <= 6 and not (
+                        len(group) == 4 and group[:2] in ("19", "20")):
+                    return group
+                i = j
+            else:
+                i += 1
     return None
 
 # ARC clinic codes → spelled-out facility names (unit slot + "to" refs).
@@ -826,6 +832,9 @@ def _heuristic_extract(text: str, company_key: str, source_name: str = "",
             kind_word = ov["kind"]
         elif _RENEWAL_CERT_RE.search(text[:3000]):
             kind_word = "Renewal Certificate"
+        elif "renewal" in (source_name or "").lower():
+            # Uploader-labeled renewal (certificate OCR often degrades).
+            kind_word = "Renewal Certificate"
         else:
             kind_word = "Invoice" if re.search(r"(?i)\binvoice\b", text) else "Bill"
         check_seg = f"Check {check_no}" if check_no else "Check"
@@ -943,18 +952,20 @@ def extract_transaction(
     company_key: str = "",
     use_llm: bool = True,
     overrides: dict[str, str] | None = None,
+    orientations: dict[int, int] | None = None,
 ) -> ExtractedTransaction:
     """Main entry point: raw text / PDF path / PDF bytes → ExtractedTransaction.
 
     ``overrides`` (date/amount/doctype/check) applies to the heuristic path;
-    LLM results return as-is.
+    LLM results return as-is.  ``orientations`` is filled with winning
+    auto-orient angles per OCR'd page when given.
     """
     from pypdf import PdfReader
 
     n_pages = 0  # 0 = unknown (raw-text callers); single-page rule needs 1.
     if text is None:
         if pdf_path is not None:
-            text = extract_text_from_pdf(Path(pdf_path))
+            text = extract_text_from_pdf(Path(pdf_path), orientations=orientations)
             try:
                 n_pages = len(PdfReader(str(pdf_path)).pages)
             except Exception:  # noqa: BLE001 - page count is advisory only
@@ -965,7 +976,7 @@ def extract_transaction(
             with tempfile.NamedTemporaryFile(suffix=".pdf", delete=True) as tmp:
                 tmp.write(pdf_bytes)
                 tmp.flush()
-                text = extract_text_from_pdf(Path(tmp.name))
+                text = extract_text_from_pdf(Path(tmp.name), orientations=orientations)
                 try:
                     n_pages = len(PdfReader(tmp.name).pages)
                 except Exception:  # noqa: BLE001 - advisory only

@@ -82,10 +82,13 @@ def ocr_pages_to_text(
     pages: list[int],
     dpi: int = 200,
     lang: str = "eng",
+    orientations: dict[int, int] | None = None,
 ) -> dict[int, str]:
     """OCR selected 0-based pages.  Returns ``{pageno: text}`` (missing = failed).
 
     Each page is auto-oriented by confidence (sideways check scans recover).
+    When ``orientations`` is given it is filled with the winning angle per
+    OCR'd page (0 = already upright) for downstream straightening.
     """
     pdf_path = Path(pdf_path)
     if not pdf_path.exists():
@@ -115,9 +118,11 @@ def ocr_pages_to_text(
             bitmap = pdf[i].render(scale=scale).to_pil()
             if bitmap.mode != "RGB":
                 bitmap = bitmap.convert("RGB")
-            page_text = _ocr_best_orientation(bitmap, lang=lang)
+            page_text, angle = _ocr_best_orientation_angle(bitmap, lang=lang)
             if page_text:
                 out[i] = page_text
+            if orientations is not None:
+                orientations[i] = angle
     finally:
         pdf.close()
     return out
@@ -136,9 +141,16 @@ def _ocr_best_orientation(bitmap, lang: str = "eng") -> str:
     difference between an unreadable check and "Check 2672 9/19/2026".
     Costs extra passes only when the upright read scores poorly.
     """
+    return _ocr_best_orientation_angle(bitmap, lang=lang)[0]
+
+
+def _ocr_best_orientation_angle(bitmap, lang: str = "eng") -> tuple[str, int]:
+    """Like :func:`_ocr_best_orientation` but also returns the winning angle
+    (0/90/180/270) so callers can straighten the page for human viewing."""
     best, best_conf = _ocr_text_and_conf(bitmap, lang=lang)
+    best_angle = 0
     if best_conf >= ORIENT_MIN_CONF:
-        return best
+        return best, best_angle
     for angle in (90, 180, 270):
         try:
             rotated = bitmap.rotate(angle, expand=True)
@@ -146,5 +158,35 @@ def _ocr_best_orientation(bitmap, lang: str = "eng") -> str:
         except Exception:  # noqa: BLE001 - rotation/OCR best-effort
             continue
         if conf > best_conf:
-            best, best_conf = candidate, conf
-    return best
+            best, best_conf, best_angle = candidate, conf, angle
+    return best, best_angle
+
+
+def pil_to_pdf_angle(pil_ccw_degrees: int) -> int:
+    """Convert a PIL counter-clockwise angle to PDF clockwise /Rotate degrees."""
+    return (-pil_ccw_degrees) % 360
+
+
+def apply_orientations(src: Path, dst: Path, orientations: dict[int, int]) -> list[int]:
+    """Write ``src`` to ``dst`` with PDF /Rotate flags per 0-based page.
+
+    ``orientations`` holds PIL counter-clockwise angles (as recorded during
+    auto-orient); conversion to clockwise /Rotate is handled here.  Rotation
+    is metadata-only (lossless).  Returns the 1-based pages straightened.
+    """
+    from pypdf import PdfReader, PdfWriter
+
+    reader = PdfReader(str(src))
+    writer = PdfWriter()
+    straightened: list[int] = []
+    for i, page in enumerate(reader.pages):
+        deg = pil_to_pdf_angle(orientations.get(i, 0))
+        if deg:
+            writer.add_page(page.rotate(deg))
+            straightened.append(i + 1)
+        else:
+            writer.add_page(page)
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    with open(dst, "wb") as fh:
+        writer.write(fh)
+    return straightened

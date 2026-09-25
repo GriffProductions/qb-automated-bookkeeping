@@ -24,15 +24,22 @@ _AMOUNT_RE = re.compile(r"(?<![\d.,])-?\$?\s?(\d[\d,]*\.\d{2})(?!\d)")
 
 
 def extract_text_from_pdf(
-    pdf_path: Path, max_chars: int | None = None, enable_ocr: bool = True
+    pdf_path: Path, max_chars: int | None = None, enable_ocr: bool = True,
+    orientations: dict[int, int] | None = None,
 ) -> str:
-    """Extract text: pdfplumber → pypdf → Tesseract OCR (for scans)."""
-    text, _method = extract_text_with_provenance(pdf_path, max_chars, enable_ocr)
+    """Extract text: pdfplumber → pypdf → Tesseract OCR (for scans).
+
+    ``orientations`` is filled with the winning auto-orient angle per OCR'd
+    page when given (for downstream page straightening).
+    """
+    text, _method = extract_text_with_provenance(
+        pdf_path, max_chars, enable_ocr, orientations=orientations)
     return text
 
 
 def extract_text_with_provenance(
-    pdf_path: Path, max_chars: int | None = None, enable_ocr: bool = True
+    pdf_path: Path, max_chars: int | None = None, enable_ocr: bool = True,
+    orientations: dict[int, int] | None = None,
 ) -> tuple[str, str]:
     """Same as :func:`extract_text_from_pdf` plus the method used.
 
@@ -85,7 +92,8 @@ def extract_text_with_provenance(
     if empty_pages and enable_ocr:
         try:
             # Cap OCR pages (front-loaded content decides amounts/dates).
-            occluded = ocr_pages_to_text(Path(pdf_path), empty_pages[:6])
+            occluded = ocr_pages_to_text(Path(pdf_path), empty_pages[:6],
+                                         orientations=orientations)
             for i, ocr_text in occluded.items():
                 if len(ocr_text.strip()) > len(parts[i].strip()):
                     parts[i] = ocr_text

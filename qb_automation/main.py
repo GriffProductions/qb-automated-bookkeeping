@@ -167,7 +167,8 @@ def cmd_review_one(args: argparse.Namespace) -> int:
 
     txn = extract_transaction(pdf_path=pdf, company_key=company_key, use_llm=not args.no_llm,
                               overrides={k: v for k, v in _parse_kv(args.set, "set").items()
-                                         if k in ("date", "amount", "doctype", "check", "kind")})
+                                         if k in ("date", "amount", "doctype", "check", "kind")},
+                              orientations=(orientations := {}))
     txn.company_name = company.display_name
     forced_account: str | None = None
 
@@ -271,6 +272,9 @@ def cmd_review_one(args: argparse.Namespace) -> int:
             numbered = "  ".join(f"{i}) {o}" for i, o in enumerate(options, 1))
             print(f"  {field}: {numbered}")
     print(f"qbxml   : {payload.request_type} (not written)")
+    shown_angles = {k + 1: v for k, v in orientations.items() if v}
+    if shown_angles and not (args.rotate or args.rotate_pages):
+        print(f"Pages auto-oriented (straightened on approve): {shown_angles}")
 
     if not args.approve:
         return 0
@@ -282,7 +286,16 @@ def cmd_review_one(args: argparse.Namespace) -> int:
     qbxml_path = settings.QBXML_OUT_DIR / company.display_name / (txn.suggested_filename + ".qbxml")
     staged_pdf.parent.mkdir(parents=True, exist_ok=True)
     qbxml_path.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(pdf, staged_pdf)
+    auto_angles = {k: v for k, v in orientations.items() if v}
+    if auto_angles and not (args.rotate or args.rotate_pages):
+        # Straighten auto-oriented pages so the filed copy reads upright
+        # (lossless /Rotate flags; manual rotation already yields straight output).
+        from qb_automation.services.ocr import apply_orientations
+
+        straightened = apply_orientations(pdf, staged_pdf, auto_angles)
+        print(f"Straightened pages for viewing: {straightened}")
+    else:
+        shutil.copy2(pdf, staged_pdf)
     if not staged_pdf.exists():
         print(f"ERROR: staging copy failed: {staged_pdf}", file=sys.stderr)
         return 1

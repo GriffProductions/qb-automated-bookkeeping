@@ -302,6 +302,22 @@ def test_check_verb_is_not_check_present():
     assert "Check" not in t.suggested_filename.split(" \u2014 ")[0]
 
 
+def test_spaced_check_digits_with_phone_and_date_decoys():
+    # OCR of a check scan: phone, fractional routing date, then spaced number.
+    text=("Atioic Checks 1-800-224-7021 11-35/1210 2 6 7 2 OMARAN ABDEEN "
+          "24701 TIBURON STREET PAY TO State Farm Bank of America 1139.74")
+    t = _heuristic_extract(text, "valencia_masters_24655", n_pages=3)
+    assert t.check_no == "2672"
+    assert "Check 2672" in t.suggested_filename
+
+
+def test_check_year_is_not_check_number():
+    text="Cole background checks 2024 completed, all clear, total 10.00"
+    t = _heuristic_extract(text, "arc", n_pages=1)
+    assert t.check_no is None
+    assert t.check_present is False
+
+
 def test_bill_without_invoice_number_heads_as_bill():
     text=("Los Angeles DWP Bill Date Sep 9 2026 Account 123 total 616.05 "
           "THIS IS YOUR BILL pay by due date")
