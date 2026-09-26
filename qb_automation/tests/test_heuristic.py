@@ -286,6 +286,46 @@ def test_single_page_invoice_stub_is_not_payment():
     assert t2.doc_type == "Bill-and-Payment"
 
 
+
+def test_ladwp_split_lines():
+    text = ('Los Angeles DWP Bill Date Sep 9 2026 Electric Charges 8/10/26 - 9/9/26 '
+            '1,542 kWh 510.24 DWP Water Charges 8/10/26 - 9/9/26 8 HOF 84.23 '
+            'Total LADWP Charges 594.47')
+    t = extract_transaction(text=text, company_key='sip', use_llm=False)
+    assert len(t.lines) == 2
+    assert (t.lines[0].account, t.lines[0].amount) == ('Utilities:Electric', 510.24)
+    assert (t.lines[1].account, t.lines[1].amount) == ('Utilities:Water', 84.23)
+    assert t.amount == 594.47
+
+
+def test_mortgage_split_lines():
+    text = ('PNC Bank Mortgage Statement Past Payments Breakdown Paid Since Last '
+            'Statement Principal Interest '
+            'Total Principal 2322.14 Interest 84.65 Regular Monthly Payment 2406.79 '
+            'Total Amount Due 2406.79 Principal Reduction Re-Amortization 250.00')
+    t = extract_transaction(text=text, company_key='valencia_seco_127', use_llm=False)
+    assert t.doc_type == 'Mortgage'
+    assert len(t.lines) == 3
+    assert t.lines[0].amount == 2322.14
+    assert t.lines[1].amount == 84.65
+    assert t.lines[2].amount == 250.00
+    assert t.amount == 2656.79
+
+
+def test_mortgage_elective_inside_principal_dropped():
+    text = ('NewRez Mortgage Statement Past Payments Breakdown Paid Last Month '
+            'Principal 3847.35 Interest 11.76 '
+            'Total 3859.11 Principal Only Payment 1500.00 Amount Due 184.98')
+    t = extract_transaction(text=text, company_key='sandiego_lebon_217', use_llm=False)
+    assert len(t.lines) == 2
+    assert t.amount == 3859.11
+
+
+def test_doc_ref_prefers_check_then_invoice():
+    text = 'Bank check image Check 2672 Check Date 9/19/2026 Pay 829.27'
+    t = _heuristic_extract(text, 'valencia_seco_127', n_pages=1)
+    assert t.doc_ref == '2672'
+
 def test_check_with_renewal_certificate_head():
     text=("State Farm Bank check image Check 2672 Check Date 9/19/2026 "
           "Pay 829.27 homeowners renewal certificate pages attached")

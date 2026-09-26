@@ -198,6 +198,16 @@ def cmd_review_one(args: argparse.Namespace) -> int:
                               orientations=(orientations := {}))
     txn.company_name = company.display_name
     forced_account: str | None = None
+    if not resolvers.uses_class(company_key):
+    # Single-unit remnant: the unit tag is noise. Drop it from the
+    # transaction and rebuild the filename without that segment.
+        old_unit = txn.unit_class
+        txn.unit_class = None
+        if old_unit:
+            from qb_automation.services.naming import build_filename, split_segments
+
+            txn.suggested_filename = build_filename(
+                *[s for s in split_segments(txn.suggested_filename) if s != old_unit])
 
     def current_suggestions():
         return resolvers.review_suggestions(company_key, txn.vendor, txn.doc_type, txn.unit_class)
@@ -282,9 +292,14 @@ def cmd_review_one(args: argparse.Namespace) -> int:
     print(f"Account : -> {refs[0].strip() if refs else '?'}"
           + ("  [fallback - review]" if forced_account is None and any("Account fallback" in w for w in warnings) else "")
           + ("  [your pick]" if forced_account else ""))
+    if txn.lines:
+        print("Lines   : (multi-line booking)")
+        for line in txn.lines:
+            print(f"  {line.amount:>10.2f}  {line.account or '(missing account)'}  {line.memo}")
     print(f"Class   : {txn.unit_class}"
           + ("  [omitted - review]" if txn.unit_class and
-             resolvers.resolve_class(company_key, txn.unit_class) is None else ""))
+             resolvers.resolve_class(company_key, txn.unit_class) is None and
+             resolvers.uses_class(company_key) else ""))
     print(f"Memo    : {txn.header_memo}")
     print(f"File    : {txn.suggested_filename}.pdf")
     for w in warnings:
@@ -329,6 +344,7 @@ def cmd_review_one(args: argparse.Namespace) -> int:
     qbxml_path.write_text(payload.qbxml, encoding="utf-8")
     log_path = settings.DATA_DIR / "review_log.json"
     entry = {"pdf": orig_name, "suggested_filename": txn.suggested_filename,
+             "status": "filed",
              "company": company_key, "vendor": vendor_name,
              "account": refs[0].strip() if refs else "", "doc_type": txn.doc_type,
              "amount": txn.amount, "date": str(txn.date), "warnings": warnings,

@@ -35,6 +35,17 @@ class ExtractedTransaction(BaseModel):
         "(e.g. rotated scan) — routes to CheckAddRq with a 'Check & …' head; "
         "supply the number via --set check=N when known",
     )
+    lines: list[SplitLine] = Field(
+        default_factory=list,
+        description="Multi-line splits (LADWP electric/water, mortgage "
+        "principal/interest).  Empty = legacy single line: amount books to "
+        "the resolved account.",
+    )
+    doc_ref: Optional[str] = Field(
+        default=None,
+        description="Document reference for QB RefNumber (check/invoice/policy "
+        "number) — the searchable field on import",
+    )
     suggested_filename: str = Field(
         ...,
         description="Standardized filename WITHOUT extension, segments joined by "
@@ -68,3 +79,21 @@ class QbXmlPayload(BaseModel):
     company_name: str
     qbxml: str
     request_type: Literal["BillAddRq", "CheckAddRq"]
+
+
+class SplitLine(BaseModel):
+    """One expense line of a multi-line Bill/Check.
+
+    ``account`` must be an exact QB FullName (any account type — expense or
+    liability); the builder validates it against the company chart and falls
+    back with a warning rather than emitting an unknown name.
+    """
+
+    account: Optional[str] = Field(
+        default=None,
+        description="Exact QB FullName (any account type — expense or liability). "
+        "None when unresolvable at extraction (e.g. mortgage note not matched); "
+        "the builder substitutes suspense and warns rather than emitting blanks.",
+    )
+    amount: float = Field(...)
+    memo: str = Field(default="")

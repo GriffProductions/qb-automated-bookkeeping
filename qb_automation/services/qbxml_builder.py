@@ -44,7 +44,35 @@ def validate_for_import(txn: ExtractedTransaction) -> list[str]:
     key = resolvers.company_key_for_display(txn.company_name)
     if key is None:
         return [f"Company {txn.company_name!r} not in registry — names unvalidated"]
-    return resolvers.validation_warnings(key, txn.vendor, txn.doc_type, txn.unit_class)
+    warnings = resolvers.validation_warnings(key, txn.vendor, txn.doc_type, txn.unit_class)
+    if txn.lines:
+        line_total = round(sum(l.amount for l in txn.lines), 2)
+        if abs(line_total - txn.amount) > 0.02:
+            warnings.append(
+                f"Split lines total {line_total:.2f} != header {txn.amount:.2f}")
+        names = resolvers.chart_names(key)
+        for line in txn.lines:
+            if line.account and line.account not in names and \
+                    line.account.lower() not in (n.lower() for n in names):
+                warnings.append(
+                    f"Split-line account {line.account!r} not in {key} chart — "
+                    f"suspense fallback on import")
+            if not line.account:
+                warnings.append("Split line has no account (mortgage note not found?) — "
+                                "suspense fallback on import")
+    return warnings
+
+
+def _resolve_line_account(key: str | None, account: str | None) -> tuple[str, bool]:
+    """Validate one split-line account; fall back rather than emit unknown names."""
+    if key is None or not account:
+        return _LEGACY_ACCOUNT, True
+    names = resolvers.chart_names(key)
+    hit = account if account in names else next(
+        (n for n in names if n.lower() == account.lower()), None)
+    if hit is not None:
+        return hit, False
+    return account or _LEGACY_ACCOUNT, True
 
 
 def build_qbxml(txn: ExtractedTransaction, request_id: int = 1,
@@ -54,7 +82,9 @@ def build_qbxml(txn: ExtractedTransaction, request_id: int = 1,
     is_bill = txn.doc_type in _BILL_TYPES and not (txn.check_no or txn.check_present)
     request_type = "BillAddRq" if is_bill else "CheckAddRq"
     txn_date = _txn_date(txn.date)
-    ref = f"{txn.vendor} {_txn_date(txn.date)} {txn.amount:.2f}".strip()
+    # RefNumber carries the searchable document number (check/invoice);
+    # legacy vendor+date fallback when unknown.
+    ref = txn.doc_ref or f"{txn.vendor} {_txn_date(txn.date)} {txn.amount:.2f}".strip()
 
     key = resolvers.company_key_for_display(txn.company_name)
     if key is None:
@@ -80,6 +110,29 @@ def build_qbxml(txn: ExtractedTransaction, request_id: int = 1,
     header_memo = _esc(txn.header_memo or ref)
     line_memo = _esc(txn.ledger_memo or ref)
 
+    if txn.lines and forced_account is None:
+        line_blocks = []
+        for line in txn.lines:
+            line_acct, _ = _resolve_line_account(key, line.account)
+            line_blocks.append(
+                "<ExpenseLineAdd>\n"
+                f"<Amount>{line.amount:.2f}</Amount>\n"
+                f"<Memo>{_esc(line.memo or line_memo)}</Memo>\n"
+                f"{class_xml}\n"
+                f"<AccountRef><FullName>{_esc(line_acct)}</FullName></AccountRef>\n"
+                "</ExpenseLineAdd>\n"
+            )
+        lines_xml = "".join(line_blocks)
+    else:
+        lines_xml = (
+            "<ExpenseLineAdd>\n"
+            f"<Amount>{txn.amount:.2f}</Amount>\n"
+            f"<Memo>{line_memo}</Memo>\n"
+            f"{class_xml}\n"
+            f"<AccountRef><FullName>{account_xml}</FullName></AccountRef>\n"
+            "</ExpenseLineAdd>\n"
+        )
+
     if is_bill:
         body = (
             f'<BillAddRq requestID="{request_id}">\n<BillAdd>\n'
@@ -88,12 +141,7 @@ def build_qbxml(txn: ExtractedTransaction, request_id: int = 1,
             f"<RefNumber>{_esc(ref[:20])}</RefNumber>\n"
             f"<Memo>{header_memo}</Memo>\n"
             f"{class_xml}\n"
-            "<ExpenseLineAdd>\n"
-            f"<Amount>{txn.amount:.2f}</Amount>\n"
-            f"<Memo>{line_memo}</Memo>\n"
-            f"{class_xml}\n"
-            f"<AccountRef><FullName>{account_xml}</FullName></AccountRef>\n"
-            "</ExpenseLineAdd>\n"
+            f"{lines_xml}"
             "</BillAdd>\n</BillAddRq>\n"
         )
     else:
@@ -104,12 +152,7 @@ def build_qbxml(txn: ExtractedTransaction, request_id: int = 1,
             f"<RefNumber>{_esc(ref[:20])}</RefNumber>\n"
             f"<Memo>{header_memo}</Memo>\n"
             f"{class_xml}\n"
-            "<ExpenseLineAdd>\n"
-            f"<Amount>{txn.amount:.2f}</Amount>\n"
-            f"<Memo>{line_memo}</Memo>\n"
-            f"{class_xml}\n"
-            f"<AccountRef><FullName>{account_xml}</FullName></AccountRef>\n"
-            "</ExpenseLineAdd>\n"
+            f"{lines_xml}"
             "</CheckAdd>\n</CheckAddRq>\n"
         )
     return QbXmlPayload(

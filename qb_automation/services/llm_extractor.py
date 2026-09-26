@@ -652,14 +652,83 @@ def _find_ref(text: str) -> str | None:
     return None
 
 
-def _invoice_amount(text: str) -> float | None:
-    """Amount on the invoice itself: first money after an invoice anchor.
+def _money_after(segment: str) -> float | None:
+    m = _MONEY_RE.search(segment)
+    if not m:
+        return None
+    try:
+        val = float(m.group("num").replace(",", ""))
+        return -val if m.group("sign") == "-" else val
+    except ValueError:
+        return None
 
-    Multi-page docs (GlobalCare + backup) carry summary/table totals that
-    dwarf the invoice — anchoring to strict "Invoice [#] N" matches first
-    keeps the invoice total; bare "invoice" words (table headers, footers)
-    are only a last resort.
+
+def _ladwp_split(text: str) -> tuple[float, float] | None:
+    """(electric, water) line amounts from an LADWP bill, or None.
+
+    Verified shape: "Electric Charges <dates> <kWh> $510.24 DWP Water
+    Charges <dates> <HCF> $84.23 ... Total LADWP Charges $594.47".
     """
+    e = re.search(r"(?i)electric charges.{0,80}?\$?(\d[\d,]*\.\d{2})", text)
+    w = re.search(r"(?i)(?:dwp )?water charges.{0,80}?\$?(\d[\d,]*\.\d{2})", text)
+    if not e or not w:
+        return None
+    try:
+        return float(e.group(1).replace(",", "")), float(w.group(1).replace(",", ""))
+    except ValueError:
+        return None
+
+
+def _mortgage_split(text: str) -> tuple[float | None, float | None, float | None]:
+    """(principal, interest, elective) of the last payment from a mortgage
+    statement's "Past Payments Breakdown" section, Nones when unparseable.
+
+    Elective = "Principal Only Payment" / "Principal Reduction*" lines.
+    Inclusion rule: the elective rides on top only when principal+interest
+    reconciles to the stated Amount Due (else it is already inside the
+    principal total and is returned as None).
+    """
+    anchor = re.search(r"(?i)past payments breakdown", text)
+    window = text[anchor.end():anchor.end() + 600] if anchor else text[:2000]
+
+    def _labeled(label_rx: str) -> float | None:
+        # All label occurrences; the tightest label→money gap wins (header
+        # rows like "Principal Interest ..." otherwise steal later totals).
+        best: tuple[int, float] | None = None
+        for lm in re.finditer(label_rx, window):
+            m = re.match(r"[^$\d]{0,30}\$?(\d[\d,]*\.\d{2})", window[lm.end():])
+            if not m:
+                continue
+            try:
+                val = float(m.group(1).replace(",", ""))
+            except ValueError:
+                continue
+            gap = len(m.group(0)) - len(m.group(1))
+            if best is None or gap < best[0]:
+                best = (gap, val)
+        return best[1] if best is not None else None
+
+    principal = _labeled(r"(?i)\bprincipal\b")
+    interest = _labeled(r"(?i)\binterest\b")
+    elective = None
+    for pat in (r"(?i)principal only payment",
+                r"(?i)principal reduction(?: re-amortization)?",
+                r"(?i)additional principal"):
+        elective = _labeled(pat)
+        if elective is not None:
+            break
+    if principal is not None and interest is not None and elective is not None:
+        base = round(principal + interest, 2)
+        due = _labeled(r"(?i)amount due")
+        # Elective is additional only when base IS the amount due;
+        # otherwise it is already inside the principal total.
+        if due is None or abs(due - base) > 0.02:
+            elective = None
+    return principal, interest, elective
+
+
+def _invoice_amount(text: str) -> float | None:
+    """Amount on the invoice itself (anchored)."""
     # Same OCR-spacing scrub as _find_amount ("2 2,369.73" → "22,369.73").
     text = re.sub(r"(?<=\d) (?=\d,\d)", "", text)
     head = text[:4000]
@@ -826,6 +895,42 @@ def _heuristic_extract(text: str, company_key: str, source_name: str = "",
             unit = codes[0]
 
     amount_seg = f"{amount:.2f}" if amount else None
+    # Multi-line splits: LADWP electric/water, mortgage principal/interest.
+    # QB reference for RefNumber (check/invoice numbers are searchable in QB).
+    doc_ref = check_no or inv_no
+    if doc_ref is None:
+        loose = _find_ref(text)
+        if loose and " " in loose:
+            doc_ref = loose.split(" ", 1)[1]
+    split_lines: list[dict] = []
+    if vkey == "ladwp" and not check_no:
+        split = _ladwp_split(text)
+        if split is not None and abs(sum(split) - (amount or 0)) <= 0.05:
+            electric, water = split
+            split_lines = [
+                {"account": "Utilities:Electric", "amount": electric,
+                 "memo": f"{vendor} Electric {electric:.2f}"},
+                {"account": "Utilities:Water", "amount": water,
+                 "memo": f"{vendor} Water {water:.2f}"},
+            ]
+    elif is_mortgage and check_no is None:
+        principal, interest, elective = _mortgage_split(text)
+        if principal is not None and interest is not None:
+            from qb_automation.services.resolvers import find_liability_account
+
+            liab = find_liability_account(company_key, vendor) or ""
+            split_lines = [
+                {"account": liab, "amount": principal, "liability": True,
+                 "memo": f"{vendor} principal {principal:.2f}"},
+                {"account": "Interest Expense", "amount": interest,
+                 "memo": f"{vendor} interest {interest:.2f}"},
+            ]
+            if elective is not None:
+                split_lines.append(
+                    {"account": liab, "amount": elective, "liability": True,
+                     "memo": f"{vendor} additional principal {elective:.2f}"})
+            amount = round(sum(l["amount"] for l in split_lines), 2)
+            amount_seg = f"{amount:.2f}"
     if arc_inv_no is not None or arc_clinic is not None:
         # "2026-09-13 Invoice — Invoice 23421 to Northridge Kidney Center — … — ARC"
         ref = f"Invoice {arc_inv_no} to {arc_clinic}" if arc_inv_no else f"Invoice to {arc_clinic}"
@@ -885,6 +990,10 @@ def _heuristic_extract(text: str, company_key: str, source_name: str = "",
         log.debug("Heuristic filename conformance notes for %s: %s", source_name, issues)
     detail = VENDOR_MEMO.get(vkey)
     ledger_memo = f"{vendor} {amount:.2f}" if detail is None else f"{vendor} {detail} {amount:.2f}"
+    if check_no:
+        header_memo = f"Check {check_no} from {vendor} on {txn_date.isoformat()}"
+    else:
+        header_memo = f"{doc_type} from {vendor} on {txn_date.isoformat()}"
     return ExtractedTransaction(
         company_name=company_name,
         date=txn_date,
@@ -894,7 +1003,10 @@ def _heuristic_extract(text: str, company_key: str, source_name: str = "",
         unit_class=unit,
         check_no=check_no,
         check_present=check_present and check_no is None,
-        header_memo=f"{doc_type} from {vendor} on {txn_date.isoformat()}",
+        lines=[{k: v for k, v in l.items() if k in ("account", "amount", "memo")}
+               for l in split_lines],
+        doc_ref=doc_ref,
+        header_memo=header_memo,
         ledger_memo=ledger_memo,
         suggested_filename=suggested,
     )

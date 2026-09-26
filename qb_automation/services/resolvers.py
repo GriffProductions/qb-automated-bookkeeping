@@ -52,7 +52,7 @@ VENDOR_ACCOUNT_MAP: dict[str, str] = {
     "rayne water": "Utilities:Water",
     "at&t": "Telephone Expense",
     # Waste haulers book to Utilities where no dedicated waste account exists.
-    "republic services": "Utilities",
+    "republic services": "Utilities:Waste",
     "burrtec": "Utilities",
     "waste management": "Utilities",
     # Insurance
@@ -138,6 +138,31 @@ def expense_names(company_key: str) -> list[str]:
             if a.get("account_type") == "Expense"]
 
 
+def chart_names(company_key: str) -> list[str]:
+    """All account FullNames in the chart, any type (for multi-line validation)."""
+    charts, _, _ = _cache()
+    entry = charts.get(company_key, {})
+    return [a["full_name"] for a in entry.get("accounts", [])]
+
+
+def find_liability_account(company_key: str, vendor: str) -> str | None:
+    """Mortgage-note account for a lender vendor (case-insensitive token match).
+
+    e.g. PNC Bank → "PNC Bank Mortgage Note", NewRez → "NewRez Loan 0031181530".
+    """
+    charts, _, _ = _cache()
+    entry = charts.get(company_key, {})
+    accounts = entry.get("accounts", [])
+    tokens = [t for t in re.sub(r"[^a-z0-9 ]", " ", vendor.lower()).split() if len(t) >= 3]
+    for a in accounts:
+        if "liability" not in a.get("account_type", "").lower():
+            continue
+        name_lower = a["full_name"].lower()
+        if any(t in name_lower for t in tokens):
+            return a["full_name"]
+    return None
+
+
 def vendor_names(company_key: str) -> list[str]:
     _, vendors, _ = _cache()
     entry = vendors.get(company_key, {})
@@ -150,7 +175,17 @@ def class_names(company_key: str) -> list[str]:
     return [c["full_name"] for c in entry.get("classes", [])]
 
 
-# Vendors whose expense account is a per-facility subaccount of a parent:
+# Single-unit companies whose Class list is a remnant — never emit ClassRef.
+NO_CLASS_COMPANIES = frozenset({
+    "valencia_seco_127",
+})
+
+
+def uses_class(company_key: str) -> bool:
+    """False for single-unit remnant companies (ClassRef always omitted)."""
+    return company_key not in NO_CLASS_COMPANIES
+
+# Vendors whose expense account is a per-facility subaccount of a parent;
 # value is the parent account; the facility code (from unit_class) selects
 # the subaccount, e.g. GlobalCare + LCD → "Billing Expense:LCD".
 FACILITY_SUBACCOUNT_VENDORS: dict[str, str] = {
@@ -185,6 +220,8 @@ def _facility_code(unit_class: str | None) -> str | None:
 ACCOUNT_ALIASES: dict[str, list[str]] = {
     "utilities:water": ["Utilities:Water", "Utilities Expense:Water", "Utilities"],
     "utilities:gas": ["Utilities:Gas", "Utilities Expense:Gas", "Utilities"],
+    "utilities:waste": ["Utilities:Waste", "Utilities:Trash & Sewer",
+                        "Waste Management Expense", "Utilities"],
     "telephone expense": ["Telephone Expense", "Utilities Expense:Phone", "Utilities"],
 }
 
@@ -270,8 +307,11 @@ def resolve_class(company_key: str, unit_class: str | None) -> str | None:
 
     Tries exact, case-insensitive, "Unit N" ↔ "N" stripped/prefixed forms.
     ARC clinic codes (SCD/NKC/…) never match owner classes → None.
+    Single-unit remnant companies (NO_CLASS_COMPANIES) always → None.
     """
     if not unit_class:
+        return None
+    if company_key in NO_CLASS_COMPANIES:
         return None
     names = class_names(company_key)
     if not names:
@@ -304,7 +344,8 @@ def validation_warnings(company_key: str, vendor: str, doc_type: str,
     _, vendor_exact = resolve_vendor(company_key, vendor)
     if not vendor_exact:
         warnings.append(f"Vendor {vendor!r} not in {company_key} vendor list — import may reject")
-    if unit_class and resolve_class(company_key, unit_class) is None:
+    if unit_class and resolve_class(company_key, unit_class) is None \
+            and uses_class(company_key):
         warnings.append(f"Class {unit_class!r} not in {company_key} classes — ClassRef omitted")
     return warnings
 
@@ -370,6 +411,6 @@ def review_suggestions(company_key: str, vendor: str, doc_type: str,
                 out["account"].append(hit)
     if unit_class and resolve_class(company_key, unit_class) is None:
         cls = class_names(company_key)
-        if cls:
+        if cls and uses_class(company_key):
             out["class"] = suggest_names(cls, unit_class) or cls[:3]
     return out
