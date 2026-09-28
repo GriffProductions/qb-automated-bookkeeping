@@ -676,6 +676,90 @@ def cmd_harvest_classes(args: argparse.Namespace) -> int:
     return _harvest_entities(args, "classes")
 
 
+def cmd_recon_status(args: argparse.Namespace) -> int:
+    """Headless bank-activity sweep with incremental save + skip-past-failure."""
+    import json
+
+    from qb_automation.config import settings
+    from qb_automation.config.company_registry import get_company
+    from qb_automation.services.chart_harvest import iter_company_files
+    from qb_automation.services.qb_connection import QBAuthRequired
+    from qb_automation.services.recon_status import load_status, sweep_company
+
+    out_path = settings.RECON_STATUS_PATH
+
+    if args.company:
+        company = get_company(args.company)
+        if company is None:
+            print(f"Unknown company key: {args.company}")
+            return 2
+        hits = [(k, q) for k, q in iter_company_files(settings.QB_COMPANY_ROOT)
+                if k == args.company]
+        if not hits:
+            print(f"No live .qbw found for {args.company} under {settings.QB_COMPANY_ROOT}")
+            return 2
+        targets = [(company.display_name, hits[0][1])]
+        keys = [args.company]
+    else:
+        pairs = iter_company_files(settings.QB_COMPANY_ROOT)
+        if args.division:
+            pairs = [(k, q) for k, q in pairs
+                     if (c := get_company(k)) is not None and c.division.value == args.division]
+        if not pairs:
+            print("No company files match.")
+            return 2
+        already = set(load_status(out_path)) if not args.refresh else set()
+        pairs = [(k, q) for k, q in pairs if k not in already]
+        if not pairs:
+            print(f"All matched companies already swept ({len(already)}). Use --refresh to redo.")
+            return 0
+        targets, keys = [], []
+        for key, qbw in pairs:
+            company = get_company(key)
+            targets.append(((company.display_name if company else key), qbw))
+            keys.append(key)
+
+    done, failures, auth_needed = [], [], []
+    for (display, qbw), key in zip(targets, keys):
+        print(f"--- {key}: {qbw.name} ---", flush=True)
+        try:
+            recon = sweep_company(key, display, qbw,
+                                  lookback_days=args.lookback_days,
+                                  per_account=args.per_account)
+        except QBAuthRequired as exc:
+            raw = f" | raw: {exc.__cause__}" if exc.__cause__ else ""
+            print(f"AUTH NEEDED ({key}): {exc}{raw}")
+            auth_needed.append(key)
+            continue
+        except Exception as exc:  # noqa: BLE001 - batch continues past one bad file
+            print(f"FAILED {key}: {exc}")
+            failures.append(key)
+            continue
+        n_accts = len(recon.accounts)
+        n_txn = sum(a["txn_count"] for a in recon.accounts)
+        print(f"  {n_accts} bank accounts, {n_txn} txns")
+        done.append(recon)
+        try:
+            from dataclasses import asdict as _asdict
+
+            existing = load_status(out_path)
+            existing[key] = _asdict(recon)
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            out_path.write_text(json.dumps(existing, indent=2, ensure_ascii=False),
+                                encoding="utf-8")
+            print(f"  saved {key} -> {out_path.name}")
+        except Exception as exc:  # noqa: BLE001 - save failure noted, batch continues
+            print(f"  SAVE FAILED {key}: {exc}")
+            failures.append(key + " (save)")
+
+    print(f"Swept {len(done)} companies -> {out_path}"
+          + (f" | auth-needed: {auth_needed}" if auth_needed else "")
+          + (f" | failures: {failures}" if failures else ""))
+    if auth_needed:
+        return 3
+    return 1 if failures else 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="qb_automation", description="Automated bookkeeping pipeline")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -704,6 +788,16 @@ def build_parser() -> argparse.ArgumentParser:
                     help="Rotate all pages before extraction (e.g. upside-down scans)")
     rv.add_argument("--rotate-pages", default="",
                     help='Per-page rotation "1:90,2:180" (1-based pages, wins over --rotate)')
+
+    rc = sub.add_parser("recon-status", help="Read-only bank activity sweep (recon proxy)")
+    rc.add_argument("--company", default="", help="Single company key, omit for --all")
+    rc.add_argument("--all", action="store_true", help="Sweep every live .qbw found")
+    rc.add_argument("--division", default="",
+                    help="With --all: only this division (real_estate, dialysis)")
+    rc.add_argument("--lookback-days", type=int, default=120)
+    rc.add_argument("--per-account", type=int, default=10)
+    rc.add_argument("--refresh", action="store_true",
+                    help="With --all: re-sweep even already-saved companies")
 
     wb = sub.add_parser("process-workbench", help="Batch process Stephen's Workbench PDFs")
     wb.add_argument("--limit", type=int, default=20)
@@ -772,6 +866,11 @@ def main(argv: list[str] | None = None) -> int:
             print("Specify --company KEY, --open (active file), or --all (batch).")
             return 2
         return cmd_harvest_classes(args)
+    if args.cmd == "recon-status":
+        if not args.company and not args.all:
+            print("Specify --company KEY or --all (batch).")
+            return 2
+        return cmd_recon_status(args)
     return 2
 
 

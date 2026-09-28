@@ -73,6 +73,10 @@ CLASSES_PATH = Path(
 ROTATIONS_PATH = Path(
     os.getenv("QB_ROTATIONS_PATH", str(DATA_DIR / "rotations.json"))
 )
+# Bank activity sweep output (recon proxy: last dated activity per account).
+RECON_STATUS_PATH = Path(
+    os.getenv("QB_RECON_STATUS_PATH", str(DATA_DIR / "recon_status.json"))
+)
 
 # --- GCP / Gemini settings -------------------------------------------------
 GCP_PROJECT = os.getenv("GCP_PROJECT", "")
